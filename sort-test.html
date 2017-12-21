@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!-- HTML5 Hello world by kirupa - http://www.kirupa.com/html5/getting_your_feet_wet_html5_pg1.htm -->
+<html lang="en-us">
+
+<head>
+<meta charset="utf-8">
+<title>Hello...</title>
+<style type="text/css">
+
+</style>
+</head>
+
+<body>
+
+<script> 
+            let getRoundArray = num => {
+                let ary = [];
+                while (num--) {
+                    let maxNum = 10000,
+                            minNum = 1,
+                            i = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+                    ary.push(i);
+                }
+                return ary;
+            };
+
+            let validationList = (sortList, oldList) => {
+                return JSON.stringify(sortList) === JSON.stringify(oldList);
+            };
+
+            let sortAndLog = (func, list) => {
+                let _list = [...list];
+                let name = func.name;
+                let bf = new Date();
+                let ret = func(_list);
+                let af = new Date();
+                console.log(`${name} run:` + (af.getTime() - bf.getTime()));
+                return ret;
+            };
+
+            let originSort = list => list.sort((a, b) => a - b);
+            let quickSort = list => {
+                if (list.length <= 1)
+                    return list;
+                let left = [], mid = list.shift(), right = [];
+                for (let o of list) {
+                    if (o < mid)
+                        left.push(o);
+                    else
+                        right.push(o);
+                }
+                return quickSort(left).concat(mid).concat(quickSort(right));
+            };
+            let hashSort = list => {
+                if (list.length <= 1)
+                    return list;
+                let mapArray = [];
+                let rtn = [], min = list[0], max = list[0];
+                //map
+                for (let o of list) {
+                    if (!mapArray[o]) {
+                        mapArray[o] = [];
+                    }
+                    if (o <= min) {
+                        min = o;
+                    }
+                    if (o >= max) {
+                        max = o;
+                    }
+                    mapArray[o].push(o);
+                }
+                //reduce
+                for (let i = min; i <= max; i++) {
+                    if (!mapArray[i])
+                        continue;
+                    for (let o of mapArray[i]) {
+                        rtn.push(o);
+                    }
+                }
+                return rtn;
+            };
+
+            let list = getRoundArray(1000000);
+            let originlist = sortAndLog(originSort, list);
+            let quickList = sortAndLog(quickSort, list);
+            let hashList = sortAndLog(hashSort, list);
+
+            console.log('quickList === originlist ? ' + validationList(quickList, originlist));
+            console.log('quickList === originlist ? ' + validationList(hashList, originlist));
+
+</script>
+
+</body>
+</html>
