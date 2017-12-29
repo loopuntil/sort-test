@@ -12,10 +12,19 @@
 
 <body>
 
-<script> 
+<script>
+        /*
+        1.實作快速排序與原生的排序方法比較排序時間，但是因為我們實作的快速排序並未最佳化，所以沒意外會比原生排序慢
+        2.根據Google提出的MapReduce概念，實作hashsort(名字我自己取的)，與Javascript原生排序方法比較排序速度
+        3.沒意外我們實作出來的排序方法是裡面最快的
+        */
+
+
+            //產生隨機亂數陣列，num是位數
             let getRoundArray = num => {
                 let ary = [];
                 while (num--) {
+                    //產生範圍1~10000間的亂數
                     let maxNum = 10000,
                             minNum = 1,
                             i = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
@@ -23,40 +32,58 @@
                 }
                 return ary;
             };
-
+            //判斷兩個陣列是否相等，主要驗證我們實作出來的排序陣列跟原生排出來的有沒有一樣
             let validationList = (sortList, oldList) => {
                 return JSON.stringify(sortList) === JSON.stringify(oldList);
             };
-
+            //執行傳入的排序方法與陣列，並計算排序時間
             let sortAndLog = (func, list) => {
+                //...list是陣列展開，ES6的新增語法，在這邊用來複製陣列
                 let _list = [...list];
+                //取得傳入的function名稱
                 let name = func.name;
                 let bf = new Date();
                 let ret = func(_list);
                 let af = new Date();
+                //印出執行時間
                 console.log(`${name} run:` + (af.getTime() - bf.getTime()));
+                //回傳排序結果
                 return ret;
             };
-
+            //JavaScript的原生排序api
             let originSort = list => list.sort((a, b) => a - b);
+            //實作快速排序
             let quickSort = list => {
+                //如果陣列小於等於1就直接回傳，這也是遞迴的終止條件
                 if (list.length <= 1)
                     return list;
+                //設定兩個陣列與一個旗標(mid)，這邊mid只是隨意抓陣列的第一個當基準
                 let left = [], mid = list.shift(), right = [];
+                //迭代原陣列，以mid為基準，比mid小的放left，不然就放right
                 for (let o of list) {
                     if (o < mid)
                         left.push(o);
                     else
                         right.push(o);
                 }
+                //將left與right分別遞迴跑quickSort後再合併，concat是合併陣列語法
+                //也可以用[...quickSort(left),mid,...concat(quickSort(right)]的語法合併(效能會稍微差一點)
                 return quickSort(left).concat(mid).concat(quickSort(right));
             };
+            //我們可以看到，快速排序取決於一開始抓到的基準值，如果使用的基準值不能把陣列切成兩半的話，快速排序並不會比較快
+            //在以上的例子，如果資料已經排序過的話，比較次數相當於n平方(n為資料筆數)
+            //要最佳化快速排序的話，一開始的基準值不能隨意取，必須盡量接近真正的中位數，但是我們後面有更快更直覺的排序方法，所以略過
+
+
+
             let hashSort = list => {
                 if (list.length <= 1)
                     return list;
+                //mapArray是把list的值映射到對應的位置    
                 let mapArray = [];
+                //rtn是我們後續要整理出來回傳的陣列，min與max是要取得該陣列的最小最大值，也是後面迴圈的起始與終止值
                 let rtn = [], min = list[0], max = list[0];
-                //map
+                //map 將資料map到對應的位置，例如1到mapArray[1]，如果有重複的值，會依序串聯
                 for (let o of list) {
                     if (!mapArray[o]) {
                         mapArray[o] = [];
@@ -69,10 +96,12 @@
                     }
                     mapArray[o].push(o);
                 }
-                //reduce
+                //reduce 迴圈範圍由陣列的最小(min)到最大(max)，所以迭代條件是 i小於等於max 
                 for (let i = min; i <= max; i++) {
+                    //沒有就略過
                     if (!mapArray[i])
                         continue;
+                    //有就依序取出來放入要回傳的陣列    
                     for (let o of mapArray[i]) {
                         rtn.push(o);
                     }
